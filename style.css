@@ -1,0 +1,134 @@
+/* Base styles (same as previous version) */
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; margin: 15px; background-color: #f0f3f7; color: #333; display: flex; flex-direction: column; align-items: center; }
+h1, h2, h3 { text-align: center; color: #2c3e50; margin-bottom: 0.8em; }
+h1 { margin-bottom: 1em; color: #1a5276; }
+.container { display: flex; flex-wrap: wrap; gap: 20px; width: 100%; max-width: 1800px; justify-content: center; }
+.panel { background-color: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+
+/* Layout adjustments */
+.controls { flex: 1; min-width: 280px; max-width: 350px; align-self: flex-start; order: 1; }
+.simulation-area { flex: 3; min-width: 720px; display: flex; flex-direction: column; align-items: center; order: 2; background-color: #ffffff; /* White background for canvas area */ }
+.explanation-graphs-container { flex: 1.5; min-width: 400px; max-width: 500px; display: flex; flex-direction: column; gap: 20px; align-self: flex-start; order: 3; }
+.explanation { max-height: none; /* Remove height limit for explanation */ } /* Let it grow */
+.graphs { /* Takes remaining space in its container */ }
+
+/* Controls, Info, Buttons Styling (mostly same) */
+.controls div:not(.info):not(.camera-controls) { margin-bottom: 18px; }
+.controls label { display: block; margin-bottom: 6px; font-weight: 600; font-size: 0.95em; color: #555; }
+.controls input[type="range"] { width: 65%; vertical-align: middle; }
+.controls span { font-weight: bold; margin-left: 8px; vertical-align: middle; min-width: 30px; display: inline-block; }
+.controls button { padding: 9px 15px; margin-right: 8px; margin-top: 8px; cursor: pointer; border: none; border-radius: 5px; font-weight: bold; transition: background-color 0.2s ease, transform 0.1s ease; font-size: 0.9em; }
+button#startButton { background-color: #27ae60; color: white; } /* Greener */
+button#stopButton { background-color: #c0392b; color: white; } /* Darker Red */
+button#resetButton { background-color: #d35400; color: white; } /* Darker Orange */
+.controls .camera-controls button { background-color: #3498db; color: white; } /* Blue for camera */
+button:hover { opacity: 0.85; }
+button:active { transform: scale(0.97); }
+
+.info, .camera-controls { margin-top: 20px; padding-top: 15px; border-top: 1px solid #e0e4e8; }
+.info h3, .camera-controls h3 { margin-bottom: 10px; font-size: 1.1em; }
+.info p { font-size: 0.9em; color: #444; margin: 4px 0; }
+.info span { font-weight: 600; color: #111; }
+
+/* Canvas Container Styling */
+#canvasContainer {
+    width: 100%;
+    height: 550px; /* Adjust height as needed */
+    max-height: 60vh; /* Limit height based on viewport */
+    position: relative;
+    margin-bottom: 15px;
+    background-color: #e8f0f4; /* Background for the 3D area */
+    border-radius: 5px;
+    overflow: hidden; /* Ensure canvas fits */
+    border: 1px solid #d0d9e0;
+}
+#canvasContainer canvas {
+    display: block; /* Remove extra space */
+}
+
+/* Energy Display (minor tweaks) */
+.energy-display { margin-top: 10px; width: 95%; }
+.energy-display h3 { font-size: 1.0em; margin-bottom: 8px; color: #333; }
+.energy-bars { display: flex; justify-content: space-around; gap: 15px; height: 55px; /* Slightly shorter bars */ align-items: flex-end; padding: 8px; border: 1px solid #dde4e9; border-radius: 5px; background-color: #f8f9fa; }
+.bar-container { display: flex; flex-direction: column; align-items: center; width: 80px; text-align: center; }
+.bar-container label { font-size: 0.8em; margin-bottom: 4px; font-weight: 500; color: #444; }
+.bar { width: 45px; background-color: #d5dde2; border-radius: 3px 3px 0 0; transition: height 0.05s linear; height: 0%; position: relative; display: flex; justify-content: center; align-items: flex-end; }
+.energy-value { position: absolute; bottom: -18px; left: 0; right: 0; font-size: 0.7em; color: #555; font-weight: 500; }
+#energyC { background: linear-gradient(to top, #5dade2, #8ecae6); } /* Gradient fill */
+#energyL { background: linear-gradient(to top, #e74c3c, #f1948a); }
+#energyTotal { background: linear-gradient(to top, #af7ac5, #d7bde2); }
+
+
+/* Explanation Panel Styling */
+#dynamicExplanation { margin-top: 10px; padding: 15px; background-color: #f8f9fa; border-radius: 5px; border-left: 4px solid #1a5276; font-size: 0.95em; }
+#dynamicExplanation p, #dynamicExplanation li { margin-bottom: 12px; color: #34495e; line-height: 1.5; }
+#dynamicExplanation strong { color: #1a5276; font-weight: 600; }
+#dynamicExplanation em { font-style: normal; font-weight: 600; color: #e67e22; } /* Orange highlight */
+#dynamicExplanation ul { padding-left: 20px; list-style: disc; }
+#phaseInfo { font-style: italic; color: #555; margin-left: 5px; }
+hr { border: none; border-top: 1px solid #e0e4e8; margin: 15px 0; }
+
+
+/* Graphs (minor tweaks) */
+.graphs h2 { margin-bottom: 10px; }
+.chart-container { margin-bottom: 15px; position: relative; height: 190px; width: 100%; }
+
+/* Responsive Adjustments */
+@media (max-width: 1400px) {
+    .container { flex-direction: column; align-items: center; }
+    .controls, .simulation-area, .explanation-graphs-container { width: 95%; max-width: 900px; min-width: unset; order: 0; }
+    .explanation-graphs-container { max-width: 900px; flex-direction: row; flex-wrap: wrap; }
+    .explanation, .graphs { flex: 1; min-width: 300px; }
+}
+@media (max-width: 768px) {
+     h1 { font-size: 1.3em; }
+     .panel { padding: 15px; }
+     .explanation-graphs-container { flex-direction: column; }
+     #canvasContainer { height: 450px; max-height: 55vh; }
+     .chart-container { height: 180px; }
+     .energy-bars { height: 50px; }
+     .bar { width: 40px; }
+     .energy-value { font-size: 0.7em; bottom: -18px;}
+}
+
+/* --- Quarter Period Explanation Styling --- */
+.quarter-period-explanation {
+    background-color: #f8fafd; /* Slightly different background */
+    border-left: 5px solid #5dade2; /* Different accent color */
+}
+
+.quarter-period-explanation h2 {
+    color: #2e86c1; /* Match accent color */
+    border-bottom-color: #aed6f1; /* Lighter border */
+}
+
+.period-interval {
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 1px dashed #d6eaf8; /* Dashed separator */
+}
+.period-interval:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.period-interval h4 {
+    font-size: 1.05em;
+    font-weight: 600;
+    color: #1b4f72;
+    margin-bottom: 8px;
+}
+
+.period-interval p {
+    font-size: 0.95em;
+    line-height: 1.5;
+    color: #34495e;
+    margin-bottom: 5px;
+    padding-left: 10px; /* Indent text slightly */
+}
+
+.period-interval p strong {
+    font-weight: 600;
+    color: #21618c;
+}

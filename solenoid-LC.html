@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Solenoid Induction Simulation (LC Circuit) - Refined</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Load Three.js -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+    <!-- Load Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <h1>3D Solenoid: Particles, Fields & Induction in LC Circuit</h1>
+
+    <div class="container">
+        <div class="controls panel">
+            <h2>Parameters</h2>
+            <div>
+                <label for="capacitance">Capacitance C (μF):</label>
+                <input type="range" id="capacitance" name="capacitance" min="1" max="200" value="50">
+                <span id="cValue">50</span> μF
+            </div>
+            <div>
+                <label for="inductance">Inductance L (mH):</label>
+                <input type="range" id="inductance" name="inductance" min="10" max="300" value="150">
+                <span id="lValue">150</span> mH
+            </div>
+            <div>
+                <label for="initialCharge">Initial Capacitor Q₀ (μC):</label>
+                <input type="range" id="initialCharge" name="initialCharge" min="-100" max="100" value="100">
+                <span id="qValue">100</span> μC
+            </div>
+            <!-- ADDED SPEED SLIDER -->
+            <div>
+                <label for="simSpeed">Simulation Speed:</label>
+                <input type="range" id="simSpeed" name="simSpeed" min="0.1" max="5" value="1" step="0.1">
+                <span id="speedValue">1.0</span> x
+            </div>
+            <!-- END ADDED SPEED SLIDER -->
+            <div>
+                <button id="startButton">Start</button>
+                <button id="stopButton">Stop</button>
+                <button id="resetButton">Reset</button>
+            </div>
+             <div class="info">
+                 <h3>Readouts</h3>
+                 <p>Time: <span id="timeDisplay">0.000</span> s</p>
+                 <p>Charge Q: <span id="chargeDisplay">0.00</span> µC</p>
+                 <p>Current I: <span id="currentDisplay">0.00</span> mA</p>
+                 <p>dI/dt: <span id="didtDisplay">0.00</span> A/s</p>
+                 <p>V<sub>Cap</sub>: <span id="vcDisplay">0.00</span> V</p>
+                 <p>V<sub>Ind</sub>: <span id="vlDisplay">0.00</span> V</p>
+            </div>
+             <div class="camera-controls">
+                 <h3>View</h3>
+                 <button id="camTop">Top</button>
+                 <button id="camSide">Side</button>
+                 <button id="camIso">Isometric</button>
+                 <p class="view-hint">(Click & Drag to Orbit)</p>
+             </div>
+        </div>
+
+        <div class="simulation-area panel">
+            <div id="canvasContainer">
+                <!-- Canvas will be inserted here by Three.js -->
+            </div>
+            <div class="energy-display">
+                <h3>Energy Storage</h3>
+                <div class="energy-bars">
+                    <div class="bar-container"><label>Capacitor (U<sub>E</sub>)</label><div class="bar" id="energyC"><span class="energy-value" id="energyCValue">0 µJ</span></div></div>
+                    <div class="bar-container"><label>Inductor (U<sub>B</sub>)</label><div class="bar" id="energyL"><span class="energy-value" id="energyLValue">0 µJ</span></div></div>
+                    <div class="bar-container"><label>Total (U<sub>T</sub>)</label><div class="bar" id="energyTotal"><span class="energy-value" id="energyTValue">0 µJ</span></div></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="explanation-graphs-container">
+            <div class="explanation panel">
+                <h2>Why Current Continues (t = T/4 to T/2)</h2>
+                <div id="dynamicExplanation">
+                    <!-- Existing content here -->
+                     <p>When the capacitor is fully discharged (Q=0, Vc=0 at t=T/4), why do the charge carriers keep moving?</p>
+                     <p><strong>Inductor's Inertia:</strong> The key is the energy stored in the inductor's <strong>magnetic field (B)</strong>, created by the moving charges.</p>
+                     <ul>
+                         <li>As charges start slowing down (current |I| decreases after T/4), the magnetic field B begins to collapse.</li>
+                         <li>A <em>changing</em> magnetic field induces an Electric Field (E_ind, cyan arrows) along the wire (Faraday's Law).</li>
+                         <li>This E_ind now pushes the positive charges <em>forward</em> (Lenz's Law - opposing the <em>decrease</em> in current).</li>
+                         <li>The inductor acts like a temporary power source, converting its stored magnetic energy (U<sub>B</sub>) back into kinetic energy for the charges, forcing them onto the other capacitor plate against its now-building reverse voltage.</li>
+                     </ul>
+                     <p>This "electromagnetic inertia" keeps the current flowing until all magnetic energy is transferred back to the capacitor (now with opposite polarity at t=T/2).</p>
+                     <hr><p><strong>Current Phase Details:</strong><span id="phaseInfo"> Paused.</span></p>
+                </div>
+            </div>
+            <div class="graphs panel">
+                <!-- Graphs remain the same -->
+                <h2>Graphs</h2>
+                <div class="chart-container"> <canvas id="chargeCurrentChart"></canvas> </div>
+                <div class="chart-container"> <canvas id="energyChart"></canvas> </div>
+            </div>
+
+            <!-- *** NEW SECTION START *** -->
+            <div class="quarter-period-explanation panel">
+                <h2>LC Oscillation Cycle (Period T)</h2>
+                <div class="period-interval">
+                    <h4>t = 0 to T/4:</h4>
+                    <p><strong>Capacitor Discharges:</strong> Initial charge Q decreases from max to 0. Voltage Vc drives current.</p>
+                    <p><strong>Inductor Energizes:</strong> Current I increases from 0 to max. Growing magnetic field B stores energy U<sub>B</sub>.</p>
+                    <p><strong>Back EMF:</strong> Changing B induces E_ind opposing the <em>increase</em> in I.</p>
+                    <p><strong>Energy:</strong> U<sub>E</sub> → U<sub>B</sub>.</p>
+                </div>
+                 <div class="period-interval">
+                    <h4>t = T/4 to T/2:</h4>
+                    <p><strong>Capacitor Recharges (Opposite):</strong> Current I decreases from max to 0 (but keeps flowing CW). Charge Q builds up negatively (on left plate) to max.</p>
+                    <p><strong>Inductor Discharges:</strong> Collapsing magnetic field B releases energy U<sub>B</sub>.</p>
+                    <p><strong>Forward EMF:</strong> Changing B induces E_ind pushing <em>with</em> I, opposing the <em>decrease</em> in I (maintains flow).</p>
+                    <p><strong>Energy:</strong> U<sub>B</sub> → U<sub>E</sub>.</p>
+                </div>
+                 <div class="period-interval">
+                    <h4>t = T/2 to 3T/4:</h4>
+                    <p><strong>Capacitor Discharges (Reversed):</strong> Negative charge |Q| decreases from max to 0. Reversed Vc drives reversed current (CCW).</p>
+                    <p><strong>Inductor Energizes (Reversed):</strong> Reversed current |I| increases from 0 to max. B-field builds in opposite direction, storing U<sub>B</sub>.</p>
+                    <p><strong>Back EMF:</strong> Changing B induces E_ind opposing the <em>increase</em> in |I|.</p>
+                    <p><strong>Energy:</strong> U<sub>E</sub> → U<sub>B</sub>.</p>
+                </div>
+                 <div class="period-interval">
+                    <h4>t = 3T/4 to T:</h4>
+                    <p><strong>Capacitor Recharges (Original):</strong> Reversed current |I| decreases from max to 0. Charge Q builds back up positively (on left plate).</p>
+                    <p><strong>Inductor Discharges (Reversed):</strong> Collapsing (reversed) B-field releases energy U<sub>B</sub>.</p>
+                    <p><strong>Forward EMF:</strong> Changing B induces E_ind pushing <em>with</em> the reversed I, opposing the <em>decrease</em> in |I|.</p>
+                    <p><strong>Energy:</strong> U<sub>B</sub> → U<sub>E</sub>.</p>
+                </div>
+            </div>
+            <!-- *** NEW SECTION END *** -->
+
+            
+        </div>
+    </div>
+
+    <!-- Main simulation script -->
+    <script type="module" src="script.js"></script>
+
+</body>
+</html>
